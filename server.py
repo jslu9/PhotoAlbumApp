@@ -17,12 +17,13 @@ def get_application(debug=False):
     routes = [
         (r'/album/get/all/?$', AlbumsListHandler),
 	(r'/album/get/all/photos/?$', AlbumsPhotosListHandler),
-        (r'/album/create/title/([^/]+)/userId/([^/]+)/?$', CreateAlbumHandler),
+        (r'/album/create/?$', CreateAlbumHandler),
         (r'/album/get/photoId/([^/]+)/?$', GetAlbumsByPhotoHandler),
-        (r'/album/delete/albumId/([^/]+)/?$', DeleteAlbumHandler),
+        (r'/album/delete/?$', DeleteAlbumHandler),
         (r'/user/create/?$', CreateUserHandler),
-        (r'/user/delete/id/([^/]+)/?$', DeleteUserHandler),
-        (r'/photo/create/albumId/([^/]+)/title/([^/]+)/url/([^/]+)/?$', CreatePhotoHandler),
+        (r'/user/delete/?$', DeleteUserHandler),
+        (r'/photo/create/?$', CreatePhotoHandler),
+        (r'/photo/delete/?$', DeletePhotoHandler),
         (r'/photo/get/albumId/([^/]+)/?$', GetPhotosByAlbumHandler),
         (r'/photoAlbums/init/?$', InitHandler)
     ] 
@@ -66,10 +67,15 @@ Operation to create album
 """
 
 class CreateAlbumHandler(AppRequestHandler):
-    def get(self, title, userId):
-        session = Session()
-        results = queries.create_album(session, title, userId)
-        session.close()
+    def post(self):
+        title = self.get_argument('title')
+        userId = self.get_argument('userId')
+        if not title or not userId:
+            results = {"operation": "failed, not all the parameters were set" }
+        else:
+            session = Session()
+            results = queries.create_album(session, title, userId)
+            session.close()
         self.write(results)
 
 """
@@ -77,10 +83,14 @@ Operation to delete album
 """
 
 class DeleteAlbumHandler(AppRequestHandler):
-    def delete(self, albumId):
-        session = Session()
-        results = queries.delete_album(session, albumId)
-        session.close()
+    def delete(self):
+        albumId = self.get_argument('id')
+        if not albumId:
+            results = {"operation": "failed, not all the parameters were set" }
+        else:
+            session = Session()
+            results = queries.delete_album(session, albumId)
+            session.close()
         self.write(results)
  
 """
@@ -121,11 +131,34 @@ Operation to create photo and associate it to an album
 """
 
 class CreatePhotoHandler(AppRequestHandler):
-    def post(self, albumId, title, url):
-        session = Session()
-        results = queries.create_photo(session, albumId, title, url)
-        session.close()
+    def post(self):
+        albumId = self.get_argument('albumId','')
+        title = self.get_argument('title','')
+        url  = self.get_argument('url','')
+        thumbnailUrl = self.get_argument('thumbnailUrl','')
+        if not url or not thumbnailUrl or not title or not albumId:
+            results = {"operation": "failed, not all the parameters were set" }
+        else:
+            session = Session()
+            results = queries.create_photo(session, albumId, title, url, thumbnailUrl)
+            session.close()
         self.write(results)
+
+"""
+Operation to delete photo
+"""
+
+class DeletePhotoHandler(AppRequestHandler):
+    def delete(self):
+        id = self.get_argument('id','')
+        if not id:
+            results = {"operation": "failed, not all the parameters were set" }
+        else:
+            session = Session()
+            results = queries.delete_photo(session, id)
+            session.close()
+        self.write(results)
+
 
 """
 Operation to get all photos associated to an album
@@ -154,10 +187,14 @@ Operation to delete user
 """
 
 class DeleteUserHandler(AppRequestHandler):
-    def delete(self, id):
-        session = Session()
-        results = queries.delete_user(session, id)
-        session.close()
+    def delete(self):
+        id = self.get_argument('id','')
+        if not id:
+            results = {"operation": "failed, not all the parameters were set" }
+        else:
+            session = Session()
+            results = queries.delete_user(session, id)
+            session.close()
         self.write(results)
 
 if __name__ == "__main__":

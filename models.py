@@ -4,8 +4,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session as _SA_Session
 import settings
 
-#engine = create_engine('postgresql://atom@localhost:5432/photoalbums')
-
 engine = create_engine(settings.db_connection_string)
 Base = declarative_base(bind=engine)
 metadata = MetaData(bind=engine)

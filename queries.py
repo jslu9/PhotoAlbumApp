@@ -12,23 +12,30 @@ def get_albums_by_photo(dbsession, photoId):
 
 def get_albums_and_photos(dbsession):
     result = dbsession.query(Albums.id, Albums.userId, Albums.title).all()
-    return [ {'Album Id': x[0], 'User Id': x[1], 'Album title': x[2], 'Photos': [{'Photo Id': y.id, 'Photo title': y.title} for y in dbsession.query(Photos).filter(Photos.albumId == x[0]).all()]} for x in result]
+    return [ {'album id': x[0], 'user id': x[1], 'album title': x[2], 'Photos': [{'photo id': y.id, 'photo title': y.title, 'photo url': y.url, 'thumb nail': y.thumbnailUrl} for y in dbsession.query(Photos).filter(Photos.albumId == x[0]).all()]} for x in result]
 
-def create_photo(dbsession, albumId, title, url):
-    newPhoto = Photos(albumId = albumId, title = title, url= url)
+def get_albums(dbsession):
+    result = dbsession.query(Albums).all()
+    return [{'id': x.id, 'userId': x.userId, 'title': x.title} for x in result] 
+
+def create_photo(dbsession, albumId, title, url, thumbnailUrl):
+    newPhoto = Photos(albumId = albumId, title = title, url = url, thumbnailUrl = thumbnailUrl)
     dbsession.add(newPhoto)
     dbsession.commit()
     return {"operation": "success"}
 
-def delete_photo(dbsession, id):
-    photo = Photo(id=id)
-    dbsession.delete(photo)
-    dbsession.commit()
-    return {"operation": "success"}
+def delete_album(dbsession, id):
+    if dbsession.query(Photos).filter(Photos.albumId == id).first():
+        return {"operation": "failed, because there are still photos associated to this album"}
+    else:
+        dbsession.query(Album).filter(Photos.id == id).\
+        delete(synchronize_session=False)
+        dbsession.commit()
+        return {"operation": "success"}
 
-def create_album(dbsession, title, userId):
-    newAlbum = Albums(title = title, userId = userId)
-    dbsession.add(newAlbum)
+def delete_photo(dbsession, id):
+    dbsession.query(Photos).filter(Photos.id == id).\
+    delete(synchronize_session=False)
     dbsession.commit()
     return {"operation": "success"}
 
@@ -38,9 +45,11 @@ def delete_user(dbsession, id):
     dbsession.commit()
     return {"operation": "success"}
 
-def get_albums(dbsession):
-    result = dbsession.query(Albums).all()
-    return [{'id': x.id, 'userId': x.userId, 'title': x.title} for x in result] 
+def create_album(dbsession, title, userId):
+    newAlbum = Albums(title = title, userId = userId)
+    dbsession.add(newAlbum)
+    dbsession.commit()
+    return {"operation": "success"}
 
 def create_user(dbsession):
     newUser = Users()

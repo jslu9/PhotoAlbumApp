@@ -32,7 +32,6 @@ class Albums(Base):
 class Users(Base):
     __tablename__='users'
     id = Column(Integer, primary_key=True)
-    name = Column(String)    
 
 if __name__ == "__main__":
     create_tables(engine) 

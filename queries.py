@@ -18,12 +18,6 @@ def get_albums(dbsession):
     result = dbsession.query(Albums).all()
     return [{'id': x.id, 'userId': x.userId, 'title': x.title} for x in result] 
 
-def create_photo(dbsession, albumId, title, url, thumbnailUrl):
-    newPhoto = Photos(albumId = albumId, title = title, url = url, thumbnailUrl = thumbnailUrl)
-    dbsession.add(newPhoto)
-    dbsession.commit()
-    return {"operation": "success"}
-
 def delete_album(dbsession, id):
     if dbsession.query(Photos).filter(Photos.albumId == id).first():
         return {"operation": "failed, because there are still photos associated to this album"}
@@ -45,30 +39,36 @@ def delete_user(dbsession, id):
     dbsession.commit()
     return {"operation": "success"}
 
-def create_album(dbsession, title, userId):
-    newAlbum = Albums(title = title, userId = userId)
+def create_album(dbsession, title, userId, id=None):
+    newAlbum = Albums(id=id, title = title, userId = userId)
     dbsession.add(newAlbum)
     dbsession.commit()
     return {"operation": "success"}
 
-def create_user(dbsession):
-    newUser = Users()
+def create_user(dbsession, id=None):
+    newUser = Users(id=id)
     dbsession.add(newUser)
+    dbsession.commit()
+    return {"operation": "success"}
+
+def create_photo(dbsession, albumId, title, url, thumbnailUrl, id=None):
+    newPhoto = Photos(id=id, albumId = albumId, title = title, url = url, thumbnailUrl = thumbnailUrl)
+    dbsession.add(newPhoto)
     dbsession.commit()
     return {"operation": "success"}
 
 def empty_tables(dbsession):
     dbsession.query(Photos).delete()
     dbsession.commit()
-    dbsession.query(Albums).delete()
-    dbsession.commit()
     dbsession.query(Users).delete()
+    dbsession.commit()
+    dbsession.query(Albums).delete()
     dbsession.commit()
 
 def init(dbsession):
     empty_tables(dbsession)
     for x in range(1, 11):
-        dbsession.add(Users())
+        dbsession.add(Users(id=x))
         dbsession.commit()
 
     with open(settings.photos_json) as f:

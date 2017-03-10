@@ -68,13 +68,14 @@ Operation to create album
 
 class CreateAlbumHandler(AppRequestHandler):
     def post(self):
-        title = self.get_argument('title')
-        userId = self.get_argument('userId')
+        title = self.get_argument('title', '')
+        userId = self.get_argument('userId','')
+        id = self.get_argument('id', None)
         if not title or not userId:
             results = {"operation": "failed, not all the parameters were set" }
         else:
             session = Session()
-            results = queries.create_album(session, title, userId)
+            results = queries.create_album(session, title, userId, id)
             session.close()
         self.write(results)
 
@@ -135,12 +136,13 @@ class CreatePhotoHandler(AppRequestHandler):
         albumId = self.get_argument('albumId','')
         title = self.get_argument('title','')
         url  = self.get_argument('url','')
+        id = self.get_argument('id', None)
         thumbnailUrl = self.get_argument('thumbnailUrl','')
         if not url or not thumbnailUrl or not title or not albumId:
             results = {"operation": "failed, not all the parameters were set" }
         else:
             session = Session()
-            results = queries.create_photo(session, albumId, title, url, thumbnailUrl)
+            results = queries.create_photo(session, albumId, title, url, thumbnailUrl, id)
             session.close()
         self.write(results)
 
@@ -177,8 +179,9 @@ Operations to create user
 
 class CreateUserHandler(AppRequestHandler):
     def post(self):
+        id = self.get_argument('id', None)
         session = Session()
-        results = queries.create_user(session)
+        results = queries.create_user(session, id)
         session.close()
         self.write(results)
 
